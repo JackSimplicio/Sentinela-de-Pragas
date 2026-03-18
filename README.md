@@ -1,2 +1,86 @@
-# Sentinela-de-Pragas
-Trata-se de um agente autônomo (drone) projetado para otimizar o manejo fitossanitário através de visão computacional e sensores avançados (RGB e Multiespectral). O sistema resolve a latência do monitoramento humano ao realizar o processamento de dados em tempo real e integração com maquinário agrícola.
+# Projeto: Sentinela de Pragas
+
+### 1\. Identificação do Grupo
+
+* **Instituição:** Faculdade Engenheiro Salvador Arena (FESA)
+* **Curso:** Engenharia de Controle e Automação
+* **Grupo:** Grupo A
+* **Integrantes:**
+  * Antônio Jack S Monte - RA: 062220002
+  * Giovanna Gonçalves - RA: 062220006
+  * Jackson Gomes Cerqueira - RA: 062220030
+  * José de Jesus Amaral - RA: 062220033
+  
+\---
+
+### 2\. Área Problema Selecionada
+
+Selecione a trilha tecnológica do projeto (marque com um \[x]):
+
+* \[ ] **Saúde 4.0:** Robótica Assistiva (Controladores Inteligentes/Fuzzy)
+* \[ ] **Smart Grid:** Eficiência Energética e Descarbonização
+* \[x] **Agtech:** Automação de Precisão e Visão Computacional
+* \[ ] **Logística Autônoma:** Coordenação de AGVs e Otimização de Rotas
+
+\---
+
+### 3\. Diagnóstico e Definição do Agente
+
+Nesta seção, descrevemos o cenário de atuação e a modelagem do agente inteligente.
+
+* **Contexto:** Agrotécnica (Agricultura de Precisão). O cenário de atuação é o monitoramento fitossanitário de grandes extensões de monoculturas ou cultivos agrícolas que exigem vigilância constante contra pragas e doenças.
+* **Problema:** Monitoramento Manual Amostral e Reativo. O gargalo atual reside na dependência de técnicos humanos para vistorias locais, o que limita a análise a pequenas amostras da plantação. Isso gera uma "janela de invisibilidade", onde focos de pragas são detectados apenas quando a infestação já é severa, resultando em uso excessivo de defensivos (aplicação em área total) e perda de produtividade.
+* **Impacto:** Otimização de Insumos e Resiliência Produtiva. Espera-se uma redução superior a 50% no tempo de tomada de decisão e uma economia significativa de recursos financeiros e ambientais, devido à aplicação localizada (pulverização cirúrgica). O ganho principal é a transição de um modelo de gestão reativo para um modelo preditivo e censitário (100% de cobertura).
+
+### Modelagem PEAS (Agente Inteligente)
+
+|Componente|Descrição|
+|-|-|
+|**Performance (P)**|Eficiência e Precisão: Mapeamento de 100% da área de cultivo; redução de 50% no tempo entre diagnóstico e aplicação; erro de geolocalização inferior a 50cm (GPS RTK); e redução comprovada no custo de insumos.|
+|**Ambiente (E)**|Área Agrícola (Lavoura): Grandes extensões de cultivo abertas, sujeitas a variações de luminosidade solar, ventos e obstáculos físicos (árvores, relevo). Opera na malha geográfica da plantação.|
+|**Atuadores (A)**|Sistemas de Controle e Estabilidade: Motores de voo (propulsão), Gimbal de 3 eixos (estabilização da imagem), Link de Rádio (transmissão de dados/mapas) e sistema de pouso/retorno autônomo.|
+|**Sensores (S)**|Percepção Multimodal: Câmera Multiespectral (infravermelho para estresse hídrico/pragas), Câmera RGB 4K (detalhamento visual), GPS RTK (posicionamento centimétrico) e sensores de luminosidade.|
+
+\---
+
+### 4\. Arquitetura de Dados e IA
+
+Definição das fontes de dados e da inteligência por trás da solução.
+
+* **Origem dos Dados:** A base de dados será composta por imagens capturadas em tempo real pelas câmeras RGB (4K) e Multiespectral. Para o treinamento inicial do modelo,será utilizado dataset público como o Classificacao de Pragas da Soja - Concipe 2024 (Kaggle), que contêm milhares de imagens de folhas saudáveis e infectadas. No entanto, o diferencial reside no Dataset Proprietário gerado pelo drone, que correlaciona a imagem visual com a assinatura infravermelha (NDVI) para identificar estresse hídrico e metabólico.
+* **link dataset** [Detecção de Pragas - Soja](https://www.kaggle.com/datasets/neuronlab/deteco-de-pragas-soja?resource=download))
+* **Lógica de IA:** Redes Neurais Convolucionais (CNNs) combinadas com Algoritmos de Segmentação Semântica (como U-Net ou YOLOv8/v10).
+* **Justificativa:** Por que essa técnica é ideal para este problema específico?
+As CNNs são a técnica ideal porque possuem uma capacidade superior de extração de características espaciais (texturas, padrões de manchas e formas de insetos) que são imperceptíveis em análises estatísticas comuns. A utilização de arquiteturas como o YOLO (You Only Look Once) permite o processamento em tempo real diretamente no link de rádio ou na estação de solo, garantindo que o mapa de calor seja gerado enquanto o drone ainda está em voo. Além disso, a integração de dados multiespectrais funciona como uma "camada de atenção" extra, permitindo que a IA detecte anomalias clorofilianas antes que o dano físico seja visível na imagem RGB.
+
+\---
+
+### 5\. Plano de Tratamento de Dados (ETL)
+
+O fluxo de processamento dos dados segue estas etapas:
+
+1. **Extração:** Os dados são coletados de forma híbrida. Imagens de alta resolução (RGB e Multiespectrais) são extraídas diretamente dos sensores do drone, enquanto os dados de telemetria e posicionamento global (Latitude, Longitude e Altitude via GPS RTK) são extraídos em formatos JSON ou CSV. Em etapas de desenvolvimento, utiliza-se a simulação de trajetórias e capturas para validar o comportamento do agente em diferentes condições de vento e luz.
+2. **Transformação:** Nesta fase, os dados passam por um pipeline de refinamento:
+Limpeza de Nulos: Descarte de capturas com falha de georreferenciamento ou imagens com borrão excessivo (motion blur).
+Normalização: Ajuste de brilho e contraste com base nos sensores de luminosidade para garantir que a rede neural receba padrões visuais constantes.
+Engenharia de Atributos: Criação de camadas de dados extras, como o cálculo do NDVI (Índice de Vegetação por Diferença Normalizada) a partir das bandas de infravermelho, essencial para destacar focos de estresse invisíveis ao olho humano.
+3. **Carga:** Os dados processados são estruturados e carregados em um banco de dados geoespacial ou diretório otimizado. Esta carga disponibiliza o dataset final para o treinamento e inferência da IA, permitindo a geração do mapa de calor de severidade e a exportação direta dos pontos de pulverização para o tablet do agricultor ou para o sistema do pulverizador mecanizado.
+
+\---
+
+6. Estrutura do Repositório
+Organização simplificada para o Milestone 1:
+`/data`: Arquivos de dados originais (raw) e tratados (processed).
+`/notebooks`: Experimentos iniciais e análise exploratória.
+`/scripts`: Códigos Python (.py) contendo a lógica do agente e do ETL.
+`requirements.txt`: Lista de bibliotecas para rodar o projeto.
+`README.md`: Documentação atual do projeto.
+
+---
+
+7. Instruções para Execução
+Para reproduzir o ambiente e testar o diagnóstico:
+Clone este repositório.
+Instale as dependências:
+```bash
+   pip install -r requirements.txt
